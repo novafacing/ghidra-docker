@@ -1,0 +1,15 @@
+version: '3.7'
+services:
+    ghidra:
+        container_name: ghidraheadless
+        build:
+            context: ./
+        logging:
+            driver: "json-file"
+        ports:
+            - "13100"
+            - "13101"
+            - "13102"
+            - "4768"
+        network_mode: host
+

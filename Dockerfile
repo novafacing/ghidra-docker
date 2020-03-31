@@ -17,7 +17,7 @@ RUN useradd -m ghidra && \
 COPY --chown=ghidra:ghidra launch.sh.patch /tmp/
 
 WORKDIR /opt
-RUN apt-get update && apt-get install -y unzip wget gettext-base patch && \
+RUN apt-get update && apt-get install -y unzip wget gettext-base patch python3 git python3-pip && \
     wget -q -O ghidra.zip https://ghidra-sre.org/ghidra_${GHIDRA_VERSION}.zip && \
     echo "${GHIDRA_SHA256} *ghidra.zip" | sha256sum -c && \
     unzip ghidra.zip && \
@@ -36,4 +36,5 @@ COPY --chown=ghidra:ghidra server.sh /opt/ghidra/
 EXPOSE 13100
 EXPOSE 13101
 EXPOSE 13102
+EXPOSE 4768
 CMD ["/opt/ghidra/server.sh"]

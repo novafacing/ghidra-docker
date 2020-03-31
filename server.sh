@@ -26,4 +26,16 @@ exec java \
   ghidra.server.remote.GhidraServer \
   -a0 \
   ${GHIDRA_FLAGS:+"$GHIDRA_FLAGS"} \
-  "${GHIDRA_REPOSITORIES_PATH}"
+  "${GHIDRA_REPOSITORIES_PATH}" &
+pip3 install jfx_bridge
+git clone https://github.com/novafacing/ghidra_bridge.git /tmp/ghidra_bridge
+cd /tmp/ghidra_bridge
+python3 -m ghidra_bridge.install_server /tmp/ghidra_bridge/test_server
+if [[ -d /tmp/TestProject.rep ]]; then
+	/opt/ghidra/support/analyzeHeadless /tmp TestProject -noanalysis -scriptPath /tmp/ghidra_bridge/test_server -preScript ghidra_bridge_server.py >/tmp/script.log 2>/tmp/script.err & # Run the ghidra_bridge_server in a headless ghidra - we use non-background server, otherwise the script would exit before we could test
+else
+	/opt/ghidra/support/analyzeHeadless /tmp TestProject -import /bin/bash -noanalysis -scriptPath /tmp/ghidra_bridge/test_server -preScript ghidra_bridge_server.py >/tmp/script.log 2>/tmp/script.err & # Run the ghidra_bridge_server in a headless ghidra - we use non-background server, otherwise the script would exit before we could test
+fi
+( tail -f /tmp/script.err & ) | grep -q "_bridge.bridge:serving!" # pause until we see the ghidra_bridge_server start logging messages
+python3 -c "import ghidra_bridge; b = ghidra_bridge.GhidraBridge(namespace=globals()); print(getState().getCurrentAddress())"
+tail -f /tmp/script.err
